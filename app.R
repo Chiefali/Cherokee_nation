@@ -12,6 +12,7 @@
 # IMPORTANT:
 # This code assumes your data contain these columns:
 #   cn_gdm_rate, aian_gdm_rate, all_birth_rate, AIAN_birth_rate
+# Link to Github repo: https://github.com/Chiefali/Cherokee_nation
 # ============================================================
 
 library(dplyr)
@@ -652,7 +653,23 @@ fit_sandbox_models <- function(d_sf, domain_cols, outcomes_cols) {
     outcomes_present = outcomes_present
   )
 }
+YEAR0 <- 2022
 
+domain_scores <- compute_domain_scores(
+  dat = merged_clean,
+  domains = sdoh_domains,
+  year_filter = YEAR0
+)
+
+dat_scored_sf <- merged_clean %>%
+  filter(year == YEAR0) %>%
+  left_join(domain_scores, by = c("GEOID", "NAME", "county", "year")) %>%
+  mutate(
+    cn_gdm_rate_log = log1p(cn_gdm_rate),
+    aian_gdm_rate_log = log1p(aian_gdm_rate)
+  )
+
+dat_scored_sf_sandbox <- dat_scored_sf
 county_choices <- sort(unique(na.omit(dat_scored_sf$county)))
 stopifnot(length(county_choices) >= 1)
 
